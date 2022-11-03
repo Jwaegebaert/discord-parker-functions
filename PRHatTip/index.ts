@@ -2,6 +2,7 @@ import { AzureFunction, Context, HttpRequest } from '@azure/functions'
 import DiscordJS, { GatewayIntentBits, TextChannel } from 'discord.js';
 import crypto from 'crypto';
 import axios from 'axios';
+import _ from 'lodash';
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
   const sig = Buffer.from(req.headers['x-hub-signature-256'] || '', 'utf8');
@@ -22,31 +23,73 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     const user = await axios.get(prInfo.user.url);
     const name = user.data.name || user.data.login;
     const defaultMessages = [
-      `${name}'s wonderful PR has just been merged. Thank you so much for your contribution! 🚀`,
-      `CLI for Microsoft 365 has just been upgraded with the help of ${name}. Thank you! 👏`,
-      `A hat tip to ${name} for their awesome contribution. 🎩`,
-      `${name} has just contributed '${prInfo.title}'. Thank you! 👏`,
+      `**${name}**'s wonderful PR has just been merged. Thank you so much for your contribution! 🚀`,
+      `CLI for Microsoft 365 has just been upgraded with the help of **${name}**. Thank you! 👏`,
+      `A hat tip to **${name}** for their awesome contribution. 🎩`,
+      `**${name}** has just contributed '${prInfo.title}'. Thank you! `,
+      `woop, woop, **${name}** did an awesome job on contributing for the Microsoft 365 CLI!`,
+      `No limits for **${name}**. Thank you for your amazing contribution! 👏`,
+      `**${name}** did an astonishing contribution. Thank you for your hard work!`
     ];
 
     const docPRMessages = [
-      `The pen is mightier than the sword, that's for sure! 📚 ${name} proved just that by improving the docs.`
+      `The pen is mightier than the sword, that's for sure! 📚 **${name}** proved just that by improving the docs.`,
+      `**${name}** comprehends the value of proper documentation by updating the docs.`
     ];
 
     const bugPRMessages = [
-      `Wooaah ${name} squashed a bug! 🚀`
+      `Wooaah **${name}** squashed a bug! 🚀`,
+      `**${name}** polished the CLI for Microsoft 365 by resolving the bug ${prInfo.title}.`,
+      `Be gone bug! **${name}** made sure a bug will be no more. `
+    ];
+
+    const defaultEmojis = [
+      '👏',
+      '🚀',
+      '🎩',
+      '<:pepeHype:1025004228172861500>',
+      '😍',
+      '🤩',
+      '💪',
+      '🥳'
+    ];
+
+    const docEmojis = [
+      '📚',
+      '📖',
+      '📙'
+    ];
+
+    const bugEmojis = [
+      '🐞',
+      '⚙️',
+      '🔨',
+      '⚒️',
+      '🛠️'
     ];
 
     let message = '';
+    let emojis = [];
 
     if (prInfo.labels.some(label => label.name === 'pr-bugfix')) {
-      message = bugPRMessages[Math.floor(Math.random() * bugPRMessages.length)];
+      message = getRandomStringFromList(bugPRMessages);
+      emojis.push(getRandomStringFromList(bugEmojis));
     } 
     else if (prInfo.labels.some(label => label.name === 'docs')) {
-      message = docPRMessages[Math.floor(Math.random() * docPRMessages.length)];
-
+      message = getRandomStringFromList(docPRMessages);
+      emojis.push(getRandomStringFromList(docEmojis));
     } else {
-      message = defaultMessages[Math.floor(Math.random() * defaultMessages.length)];
+      message = getRandomStringFromList(defaultMessages);
     }
+    
+    const loopPicker = [ '1', '1', '1', '1', '1', '1', '2', '2', '2', '3' ];
+    const loopAmount = +getRandomStringFromList(loopPicker);
+    
+    for (let index = 0; index < loopAmount; index++) {
+      emojis.push(getRandomStringFromList(defaultEmojis));
+    }
+
+    emojis = _.uniq(emojis);
 
     const client = new DiscordJS.Client({
       intents: [
@@ -56,7 +99,9 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
 
     client.on('ready', async () => {
       const channel = (await client.channels.fetch(process.env['HatTipChannelId'])) as TextChannel;
-      channel.send(message);
+      const sendMessage = await channel.send(message);
+
+      emojis.forEach(async emoji => await sendMessage.react(emoji));
     });
 
     client.login(process.env['ParkerToken']);
@@ -66,5 +111,9 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     status: 204
   };
 };
+
+const getRandomStringFromList = (list: string[]): string => {
+  return list[Math.floor(Math.random() * list.length)];
+}
 
 export default httpTrigger;
