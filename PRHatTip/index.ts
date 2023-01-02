@@ -27,20 +27,27 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
       `CLI for Microsoft 365 has just been upgraded with the help of **${name}**. Thank you! 👏`,
       `A hat tip to **${name}** for their awesome contribution. 🎩`,
       `**${name}** has just contributed '${prInfo.title}'. Thank you! `,
-      `woop, woop, **${name}** did an awesome job on contributing for the Microsoft 365 CLI!`,
+      `woop, woop, **${name}** did an awesome job on contributing to the CLI for Microsoft 365!`,
       `No limits for **${name}**. Thank you for your amazing contribution! 👏`,
       `**${name}** did an astonishing contribution. Thank you for your hard work!`
     ];
 
     const docPRMessages = [
       `The pen is mightier than the sword, that's for sure! 📚 **${name}** proved just that by improving the docs.`,
-      `**${name}** comprehends the value of proper documentation by updating the docs.`
+      `**${name}** comprehends the value of proper documentation by updating the docs.`,
+      `**${name}’s** documentation skills are unparalleled. We're lucky to have you on our team ❤️`,
+      `Thanks to **${name}’s** tireless efforts, our documentation is now easier to understand!`,
+      `**${name}** is a true documentation ninja, 🥷 sneaking in and making everything better!`
     ];
 
     const bugPRMessages = [
       `Wooaah **${name}** squashed a bug! 🚀`,
       `**${name}** polished the CLI for Microsoft 365 by resolving the bug ${prInfo.title}.`,
-      `Be gone bug! **${name}** made sure a bug will be no more. `
+      `Be gone bug! **${name}** made sure a bug will be no more.`,
+      `**${name}** is a bug-squashing superhero! 🦸 Thank you for saving the day!`,
+      `We can sleep easy tonight knowing that the bug '${prInfo.title}' is finally gone, <:bedge:1025004226096664576> thanks to **${name}**!`,
+      `**${name}** is like the exterminator of the coding world. Bugs don't stand a chance!`,
+      `'${prInfo.title}' bug was no match for **${name}’s** coding might. A true hero! 🦸`
     ];
 
     const defaultEmojis = [
@@ -82,7 +89,7 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
       message = getRandomStringFromList(defaultMessages);
     }
     
-    const loopPicker = [ '1', '1', '1', '1', '1', '1', '2', '2', '2', '3' ];
+    const loopPicker = [ '1', '1', '1', '1', '1', '1', '2', '2' ];
     const loopAmount = +getRandomStringFromList(loopPicker);
     
     for (let index = 0; index < loopAmount; index++) {
