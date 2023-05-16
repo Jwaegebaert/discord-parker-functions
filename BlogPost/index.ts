@@ -1,6 +1,7 @@
 import DiscordJS, { ForumChannel, GatewayIntentBits } from 'discord.js';
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
 import he from 'he';
+import { convert } from 'html-to-text';
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
   const client = new DiscordJS.Client({
@@ -23,7 +24,17 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
       name: req.body.title, 
       message: {
         content: `
-${he.decode(req.body.summary)}
+${
+  he.decode(
+    convert(
+      req.body.summary,
+      {
+        selectors: [
+          { selector: 'img', format: 'skip' }
+        ]
+      }
+    ))
+}
 
 Read more: ${req.body.link}
         `,
