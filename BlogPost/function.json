@@ -15,5 +15,5 @@
       "name": "res"
     }
   ],
-  "scriptFile": "../dist/BlogPost/index.js"
+  "scriptFile": "../dist/blogPost/index.js"
 }

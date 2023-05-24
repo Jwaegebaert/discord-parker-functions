@@ -2,7 +2,7 @@ import DiscordJS, { ForumChannel, GatewayIntentBits } from 'discord.js';
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
 import he from 'he';
 import { convert } from 'html-to-text';
-import { PnPBlogTags } from '../Data/Tags';
+import { PnPBlogTags } from '../data/Tags';
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
   const client = new DiscordJS.Client({
