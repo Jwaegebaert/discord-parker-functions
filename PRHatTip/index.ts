@@ -3,6 +3,7 @@ import DiscordJS, { GatewayIntentBits, TextChannel } from 'discord.js';
 import crypto from 'crypto';
 import axios from 'axios';
 import _ from 'lodash';
+import { IHatTip, bugPRMessages, defaultPRMessages, docPRMessages } from '../Data/HatTipMessages';
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
   const sig = Buffer.from(req.headers['x-hub-signature-256'] || '', 'utf8');
@@ -22,81 +23,19 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
   if (action === 'closed' && prInfo.labels.some(label => label.name === 'pr-merged')) {
     const user = await axios.get(prInfo.user.url);
     const name = user.data.name || user.data.login;
-    const defaultMessages = [
-      `**${name}**'s wonderful PR has just been merged. Thank you so much for your contribution! 🚀`,
-      `CLI for Microsoft 365 has just been upgraded with the help of **${name}**. Thank you! 👏`,
-      `A hat tip to **${name}** for their awesome contribution. 🎩`,
-      `**${name}** has just contributed '${prInfo.title}'. Thank you! `,
-      `woop, woop, **${name}** did an awesome job on contributing to the CLI for Microsoft 365!`,
-      `No limits for **${name}**. Thank you for your amazing contribution! 👏`,
-      `**${name}** did an astonishing contribution. Thank you for your hard work!`
-    ];
-
-    const docPRMessages = [
-      `The pen is mightier than the sword, that's for sure! 📚 **${name}** proved just that by improving the docs.`,
-      `**${name}** comprehends the value of proper documentation by updating the docs.`,
-      `**${name}’s** documentation skills are unparalleled. We're lucky to have you on our team ❤️`,
-      `Thanks to **${name}’s** tireless efforts, our documentation is now easier to understand!`,
-      `**${name}** is a true documentation ninja, 🥷 sneaking in and making everything better!`
-    ];
-
-    const bugPRMessages = [
-      `Wooaah **${name}** squashed a bug! 🚀`,
-      `**${name}** polished the CLI for Microsoft 365 by resolving the bug ${prInfo.title}.`,
-      `Be gone bug! **${name}** made sure a bug will be no more.`,
-      `**${name}** is a bug-squashing superhero! 🦸 Thank you for saving the day!`,
-      `We can sleep easy tonight knowing that the bug '${prInfo.title}' is finally gone, <:bedge:1025004226096664576> thanks to **${name}**!`,
-      `**${name}** is like the exterminator of the coding world. Bugs don't stand a chance!`,
-      `'${prInfo.title}' bug was no match for **${name}’s** coding might. A true hero! 🦸`
-    ];
-
-    const defaultEmojis = [
-      '👏',
-      '🚀',
-      '🎩',
-      '<:pepeHype:1025004228172861500>',
-      '😍',
-      '🤩',
-      '💪',
-      '🥳'
-    ];
-
-    const docEmojis = [
-      '📚',
-      '📖',
-      '📙'
-    ];
-
-    const bugEmojis = [
-      '🐞',
-      '⚙️',
-      '🔨',
-      '⚒️',
-      '🛠️'
-    ];
-
-    let message = '';
-    let emojis = [];
+    let hatTip = null;
 
     if (prInfo.labels.some(label => label.name === 'pr-bugfix')) {
-      message = getRandomStringFromList(bugPRMessages);
-      emojis.push(getRandomStringFromList(bugEmojis));
+      hatTip = getRandomHatTip(bugPRMessages);
     } 
     else if (prInfo.labels.some(label => label.name === 'docs')) {
-      message = getRandomStringFromList(docPRMessages);
-      emojis.push(getRandomStringFromList(docEmojis));
+      hatTip = getRandomHatTip(docPRMessages);
     } else {
-      message = getRandomStringFromList(defaultMessages);
-    }
-    
-    const loopPicker = [ '1', '1', '1', '1', '1', '1', '2', '2' ];
-    const loopAmount = +getRandomStringFromList(loopPicker);
-    
-    for (let index = 0; index < loopAmount; index++) {
-      emojis.push(getRandomStringFromList(defaultEmojis));
+      hatTip = getRandomHatTip(defaultPRMessages);
     }
 
-    emojis = _.uniq(emojis);
+    hatTip.message = hatTip.message.replace('$NAME', name);
+    hatTip.message = hatTip.message.replace('$PRTITLE', prInfo.title);
 
     const client = new DiscordJS.Client({
       intents: [
@@ -106,9 +45,9 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
 
     client.on('ready', async () => {
       const channel = (await client.channels.fetch(process.env['HatTipChannelId'])) as TextChannel;
-      const sendMessage = await channel.send(message);
+      const sendMessage = await channel.send(hatTip.message);
 
-      emojis.forEach(async emoji => await sendMessage.react(emoji));
+      hatTip.emojis.forEach(async emoji => await sendMessage.react(emoji));
     });
 
     client.login(process.env['ParkerToken']);
@@ -119,8 +58,8 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
   };
 };
 
-const getRandomStringFromList = (list: string[]): string => {
-  return list[Math.floor(Math.random() * list.length)];
+const getRandomHatTip = (hatTips: IHatTip[]): IHatTip => {
+  return hatTips[Math.floor(Math.random() * hatTips.length)];
 }
 
 export default httpTrigger;

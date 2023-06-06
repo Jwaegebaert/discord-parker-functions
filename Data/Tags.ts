@@ -33,8 +33,8 @@ export const PnPBlogTags: ITag[] = [
     tagName: 'M365 platform update'
   },
   {
-    name: 'Microsoft 365 power platform community update',
-    tagName: 'Power Platform'
+    name: 'Microsoft 365 & power platform community update',
+    tagName: 'Community update'
   },
   {
     name: 'Microsoft Graph community call',
